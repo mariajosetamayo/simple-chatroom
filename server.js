@@ -13,9 +13,9 @@ var io = socket_io(server);
 io.on('connection', function (socket) {
     console.log('Client connected');
 
-    socket.on('message', function(message) {
-        console.log('Received message:', message);
-        socket.broadcast.emit('message', message);
+    socket.on('message', function(messageData) {
+        console.log('Received message:', messageData.message);
+        socket.broadcast.emit('message', messageData);
     });
 });
 
