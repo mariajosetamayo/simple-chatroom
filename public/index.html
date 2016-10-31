@@ -2,11 +2,27 @@
 <title>Chatroom</title>
 <meta charset="utf-8">
 
+
+
+
 <!-- JS -->
 <script src="/socket.io/socket.io.js"></script>
 
 <script src="//code.jquery.com/jquery-2.1.0.js"></script>
 <script src="main.js"></script> 
 
-<input type="text">
+<div id="messagesWrap">
+    <h3 class="title">Message:</h3>
+<input id="message-input" type="text">
 <div id="messages"></div>
+</div>
+
+<br />
+
+<div class="nicknameWrap">
+    <h3 class="title">What's your nickname?</h3>
+    <form id = "nicknameForm">
+        <input id="usernameInput" type="text" maxlength="14" />
+        <input class="userButton" type="submit" />
+    </form>
+</div>
