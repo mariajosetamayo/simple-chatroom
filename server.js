@@ -21,12 +21,19 @@ io.on('connection', function (socket) {
         console.log(app_users)
         console.log("ON THE SERVER, ALL USERS ARE: ", app_users)
         io.sockets.emit('all_users', app_users) //this broadcasts to ALL sockets the all users array
+        console.log("this is the connected nickname", user.nickname)
+        socket.broadcast.emit('user-has-connected', user.nickname)
     })
-
+    
     socket.on('message', function(messageData) { // receives messageData object from main.js
         console.log('Received message:', messageData.message);
         socket.broadcast.emit('message', messageData); // sends the message to all the users of the chat
     });
+    
+    socket.on('typing', function(data){
+        console.log(data)
+        socket.broadcast.emit('typing', data)
+    })
     
     socket.on('disconnect', function(user){
         console.log('user is disconnected')
