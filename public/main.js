@@ -38,6 +38,12 @@ $(document).ready(function() {
     userConnected.show()
   }
   
+  var userStatusDisconnected = function(nickname){ //function to show a message when a user comes online
+    setTimeout(fadeout, 2000)
+    userConnected.html('<p>' + nickname + " " + "went offline" + '</p>')
+    userConnected.show()
+  }
+  
   var addToUserList = function (nickname) { // function to send details (id and nickname) to the server
     user.id = socket.io.engine.id
     user.nickname = nickname
@@ -116,4 +122,6 @@ $(document).ready(function() {
   socket.on('message', addMessage); // adds message to the div every time the server send you a message
   
   socket.on('user-has-connected', userStatus)
+  
+  socket.on('user-has-disconnected', userStatusDisconnected )
 });

@@ -40,6 +40,7 @@ io.on('connection', function (socket) {
         app_users.splice(app_users.indexOf(socket.user), 1);
         console.log("these are the users after splice", app_users)
         io.sockets.emit('all_users', app_users)
+        socket.broadcast.emit('user-has-disconnected', socket.user.nickname)
     })
 });
 
