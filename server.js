@@ -23,6 +23,7 @@ io.on('connection', function (socket) {
         io.sockets.emit('all_users', app_users) //this broadcasts to ALL sockets the all users array
         console.log("this is the connected nickname", user.nickname)
         socket.broadcast.emit('user-has-connected', user.nickname)
+        io.sockets.emit('number-connected', app_users.length)
     })
     
     socket.on('message', function(messageData) { // receives messageData object from main.js
@@ -41,6 +42,7 @@ io.on('connection', function (socket) {
         console.log("these are the users after splice", app_users)
         io.sockets.emit('all_users', app_users)
         socket.broadcast.emit('user-has-disconnected', socket.user.nickname)
+        io.sockets.emit('number-connected', app_users.length)
     })
 });
 

@@ -12,6 +12,7 @@ $(document).ready(function() {
   var usersWrap = $('#usersWrap')
   var userConnected = $('#status')
   var typingMessage = $('#typing-message')
+  var usersConnectedDiv = $('#usersInfo')
   
   // we hide the message box and users list on the screen where user enters their nickname
   messagesWrap.hide();
@@ -42,6 +43,10 @@ $(document).ready(function() {
     setTimeout(fadeout, 2000)
     userConnected.html('<p>' + nickname + " " + "went offline" + '</p>')
     userConnected.show()
+  }
+  
+  var numberOfUsersConnected = function(number){
+    usersConnectedDiv.html('<h3>' + number + " " + "users connected:" + "</h3>")
   }
   
   var addToUserList = function (nickname) { // function to send details (id and nickname) to the server
@@ -124,4 +129,6 @@ $(document).ready(function() {
   socket.on('user-has-connected', userStatus)
   
   socket.on('user-has-disconnected', userStatusDisconnected )
+  
+  socket.on('number-connected', numberOfUsersConnected)
 });
