@@ -35,11 +35,9 @@ $(document).ready(function() {
     messages.append('<b>' + messageData.username + '</b><div>' + messageData.message + '</div>');
   };
   
-  var addPrivateMessage = function(clickedUserId) {
-    messagesPrivate.append('<div id = '+clickedUserId+'' + '<b>' + this.username + '</b><div>' + this.message + '</div>' + '</div>')
-    // usernameClickedId = privateMessage.id
-    
-    ////asd
+  var addPrivateMessageToDiv = function(privateMessageData) {
+    var div = $('#'+privateMessageData.id2)
+    div.append('<b>' + privateMessageData.username + '</b><div>' + privateMessageData.message + '</div>');
   }
   
   function fadeout (){
@@ -71,7 +69,7 @@ $(document).ready(function() {
   var addUserList = function(users) {
 
     usersWrap.empty()
-    users.map(user =>  usersWrap.append('<li id = '+ user.id +'><a href="">' + ((user.nickname) ? user.nickname : user.id) + '</a></li>'))
+    users.map(user =>  usersWrap.append('<li><a href="">' + ((user.nickname) ? user.nickname : user.id) + '</a></li>'))
   
     $('#privateMessageArea').empty()
     users.map(function(user){
@@ -103,19 +101,14 @@ $(document).ready(function() {
   }
   
   $('#privateMessageArea').on('keydown', 'input', function(event) { // When user presses enter, event if is triggered
-    console.log("ASD")
     if (event.keyCode != 13) {
       return;
     }
-    var message2 = privateMessageInput.val()
-    // var privateMessageData = {message: message2, username:username, id: user.id, id2: usernameClickedId}
-    var privateMessageData = privateMessageObject()
-    privateMessageData.message = message2
-    console.log("privateMessageData", privateMessageData)
-    addPrivateMessage.call(privateMessageData)
-    // bindedDivPrivateMsg(privateMessageData)
-     socket.emit('show-private-message', privateMessageData)
-     privateMessageInput.val('');
+    var privateDivId = $(this).parent('div').attr('id')
+    var privateMessageData  = privateMessageObject(privateDivId, $(this).val())
+    addPrivateMessageToDiv(privateMessageData)
+    socket.emit('show-private-message', privateMessageData)
+    $(this).val('');
   })
   
   input.keyup(function(){
@@ -181,8 +174,9 @@ $(document).ready(function() {
   socket.on('number-connected', numberOfUsersConnected)
   
   socket.on('show-private-message', function(privateMessageData){
+    console.log('received')
     privateMessages.show()
-    addPrivateMessage(privateMessageData)
+    addPrivateMessageToDiv(privateMessageData)
   }) 
   
   // socket.on('private-message', addPrivateMessage)
