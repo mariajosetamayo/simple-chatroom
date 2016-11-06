@@ -32,11 +32,11 @@ io.on('connection', function (socket) {
     });
     
     socket.on('show-private-message', function(privateMessageData){
-        var privateUserId = privateMessageData.id
+        // var privateUserId = privateMessageData.id
         var privateUserId2 = privateMessageData.id2
-        console.log("this is the private message id", privateUserId)
+        // console.log("this is the private message id", privateUserId)
         console.log("this is the user private", privateMessageData)
-        socket.to(socket.user.id).emit('show-private-message', privateMessageData)
+        // socket.to(socket.user.id).emit('show-private-message', privateMessageData)
         socket.to(privateUserId2).emit('show-private-message', privateMessageData)
     })
     

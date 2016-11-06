@@ -10,6 +10,12 @@
         padding: 10px;
         border: 1px solid #333;
     }
+    .privateMessagesWrap{
+        margin-top:10px;
+    }
+    .hidden{
+        display:none;
+    }
 </style>
 
 
@@ -41,16 +47,19 @@
 
 <br/>
 
-<div id="privateMessagesWrap">
-    <div class = "only-messages">
+<div class="hidden">
+<div  class="privateMessagesWrap only-messages">
         <h3 class="title">Private message:</h3>
         <input id="message-input-private" type="text">
         </br>
         <div id="messages-private"></div>
         <br/>
         <div id = "typing-message"></div>
-    </div>
+
 </div>
+</div>
+
+<div id="privateMessageArea"></div>
 
 <div class="nicknameWrap">
     <h3 class="title">What's your nickname?</h3>
