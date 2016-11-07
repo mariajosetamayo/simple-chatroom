@@ -27,8 +27,6 @@ $(document).ready(function() {
   var usersArray = [];
   var user = {};
   var typing;
-  // var bindedDivPrivateMsg
-  // var usernameClickedId;
   
   ///// Functions that will be used to manipulate the DOM ////
   var addMessage = function(messageData) { // function to append the data/content of the message and username to the DOM
@@ -67,10 +65,9 @@ $(document).ready(function() {
   }
   
   var addUserList = function(users) {
-
     usersWrap.empty()
     users.map(user =>  usersWrap.append('<li><a href="">' + ((user.nickname) ? user.nickname : user.id) + '</a></li>'))
-  
+    
     $('#privateMessageArea').empty()
     var otherUsers = users.filter(function(currentUser){ return user.id !== currentUser.id })
     otherUsers.map(function(user){
@@ -79,11 +76,7 @@ $(document).ready(function() {
       privateUserMessages.attr("id", user.id);
       $('#privateMessageArea').append(privateUserMessages);
     })
-    
-
-  
   };
-  
   
   usernameForm.submit(function(event){
     event.preventDefault();
@@ -113,7 +106,6 @@ $(document).ready(function() {
   })
   
   input.keyup(function(){
-    console.log("user is typing")
     typing = true
     socket.emit('typing', user.nickname + ' ' + ' is typing...')
     clearTimeout(timeout)
@@ -122,15 +114,8 @@ $(document).ready(function() {
   
   usersWrap.on('click', "a", function(event){
     event.preventDefault()
-    privateMessages.show()
-    var privateDivId = $(this).parent('li').attr('id')
-    // bindedDivPrivateMsg = addPrivateMessage(null, privateDivId)
-    // addPrivateMessage(privateDivId)
-    privateMessageObject(privateDivId)
-    // usernameClickedId = $(this).parent('li').attr('id')
-    console.log("this is the id of clicked element", privateDivId)
+    // aqui va el codigo para cuando alguien aplaste un nombre
   })
-  
   
   
   ///// Event Listners that will communicate with the server //////
@@ -160,10 +145,10 @@ $(document).ready(function() {
     }
   })
   
-  
   socket.on('all_users', function (allUsers) {
     usersArray = allUsers
     addUserList(usersArray)
+    numberOfUsersConnected(usersArray.length)
   })
   
   socket.on('message', addMessage); // adds message to the div every time the server send you a message
@@ -172,16 +157,10 @@ $(document).ready(function() {
   
   socket.on('user-has-disconnected', userStatusDisconnected )
   
-  socket.on('number-connected', numberOfUsersConnected)
-  
   socket.on('show-private-message', function(privateMessageData){
-    console.log('received')
-    console.log(privateMessageData)
     var flip = privateMessageData.id;
     privateMessageData.id = privateMessageData.id2;
     privateMessageData.id2 = flip
     addPrivateMessageToDiv(privateMessageData)
   }) 
-  
-  // socket.on('private-message', addPrivateMessage)
 });
