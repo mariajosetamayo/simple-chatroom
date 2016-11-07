@@ -72,7 +72,8 @@ $(document).ready(function() {
     users.map(user =>  usersWrap.append('<li><a href="">' + ((user.nickname) ? user.nickname : user.id) + '</a></li>'))
   
     $('#privateMessageArea').empty()
-    users.map(function(user){
+    var otherUsers = users.filter(function(currentUser){ return user.id !== currentUser.id })
+    otherUsers.map(function(user){
       var privateUserMessages = privateMessages.clone();
       privateUserMessages.find('h3').html('Private messages for: ' + ((user.nickname) ? user.nickname : user.id))
       privateUserMessages.attr("id", user.id);
@@ -175,7 +176,11 @@ $(document).ready(function() {
   
   socket.on('show-private-message', function(privateMessageData){
     console.log('received')
-    privateMessages.show()
+    console.log(privateMessageData)
+  
+    var flip = privateMessageData.id;
+    privateMessageData.id = privateMessageData.id2;
+    privateMessageData.id2 = flip
     addPrivateMessageToDiv(privateMessageData)
   }) 
   
