@@ -14,8 +14,7 @@ $(document).ready(function() {
   var typingMessage = $('#typing-message')
   var usersConnectedDiv = $('#usersInfo')
   var privateMessages = $('.privateMessagesWrap')
-  var messagesPrivate = $('#messages-private')
-  var privateMessageInput = $('.message-input-private')
+  var privateMessagesArea =  $('#privateMessageArea')
   
   // we hide the message box and users list on the screen where user enters their nickname
   messagesWrap.hide();
@@ -23,14 +22,18 @@ $(document).ready(function() {
 
   // variables that will be used to store user's information
   var state = {
-    
+    user: {},
+    typing: false
   }
-  var user = {};
-  var typing;
   
-  /* TODO 
-  Meter user, typing, 
+  /* 
+  TODO 
+  Meter user, typing en state. hecho 
+  Improve naming.
+  Fix jQuery selectors. hecho
+  Test
   
+  Switch between divs. 
   */
 
   
@@ -53,22 +56,22 @@ $(document).ready(function() {
   }
   
   var addToUserList = function (nickname) { // function to send details (id and nickname) to the server
-    user.id = socket.io.engine.id
-    user.nickname = nickname
-    socket.emit('app-user', user) // here is where we send the user details to the server
+    state.user.id = socket.io.engine.id
+    state.user.nickname = nickname
+    socket.emit('app-user', state.user) // here is where we send the user details to the server
   }
   
   var addUserList = function(users) {
     usersWrap.empty()
     users.map(user =>  usersWrap.append('<li><a href="">' + ((user.nickname) ? user.nickname : user.id) + '</a></li>'))
     
-    $('#privateMessageArea').empty()
-    var otherUsers = users.filter(function(currentUser){ return user.id !== currentUser.id })
+    privateMessagesArea.empty()
+    var otherUsers = users.filter(function(currentUser){ return state.user.id !== currentUser.id })
     otherUsers.map(function(user){
       var privateUserMessages = privateMessages.clone();
       privateUserMessages.find('h3').html('Private messages for: ' + ((user.nickname) ? user.nickname : user.id))
       privateUserMessages.attr("id", user.id);
-      $('#privateMessageArea').append(privateUserMessages);
+      privateMessagesArea.append(privateUserMessages);
     })
   };
   
@@ -81,19 +84,19 @@ $(document).ready(function() {
       return;
     }
     var message = input.val();
-    var messageData = {message:message, username:user.nickname}; // Object to save the message and the username info
+    var messageData = {message:message, username:state.user.nickname}; // Object to save the message and the username info
     addMessage(messageData); // appends the messageData object
     socket.emit('message', messageData); // emits messageData object to the server
     input.val(''); 
   });
     
     //Event listener for Private Messages
-  $('#privateMessageArea').on('keydown', 'input', function(event) { // When user presses enter, event if is triggered
+  privateMessagesArea.on('keydown', 'input', function(event) { // When user presses enter, event if is triggered
     if (event.keyCode != 13) {
       return;
     }
     var privateDivId = $(this).parent('div').attr('id')
-    var privateMessageData  = {message: $(this).val(), username:user.nickname, id: user.id, id2: privateDivId}
+    var privateMessageData  = {message: $(this).val(), username:state.user.nickname, id: state.user.id, id2: privateDivId}
     addPrivateMessageToDiv(privateMessageData)
     socket.emit('show-private-message', privateMessageData)
     $(this).val('');
@@ -111,11 +114,11 @@ $(document).ready(function() {
     
   // When user finished typing.
   input.keyup(function(){
-    typing = true
-    socket.emit('typing', user.nickname + ' ' + ' is typing...')
+    state.typing = true
+    socket.emit('typing', state.user.nickname + ' ' + ' is typing...')
     clearTimeout(timeout)
     var timeout = setTimeout(function(){
-      typing = false
+      state.typing = false
       socket.emit('typing', false)
     }, 1000)
   });
@@ -132,8 +135,8 @@ $(document).ready(function() {
     event.preventDefault();
     nicknameWrap.hide();
     messagesWrap.show();
-    user['nickname'] = usernameInput.val();
-    addToUserList(user.nickname)
+    state.user['nickname'] = usernameInput.val();
+    addToUserList(state.user.nickname)
     usersWrap.show();
   });
   
