@@ -15,12 +15,12 @@ var app_users = []
 io.on('connection', function (socket) {
     console.log('Client connected');
     
-    socket.on('app_user', function(user){
+    socket.on('app-user', function(user){
         socket.user = user
         app_users.push(user)
         console.log(app_users)
         console.log("ON THE SERVER, ALL USERS ARE: ", app_users)
-        io.sockets.emit('all_users', app_users) //this broadcasts to ALL sockets the all users array
+        io.sockets.emit('all-users', app_users) //this broadcasts to ALL sockets the all users array
         console.log("this is the connected nickname", user.nickname)
         socket.broadcast.emit('user-has-connected', user.nickname)
     })
@@ -48,7 +48,7 @@ io.on('connection', function (socket) {
         console.log('user is disconnected')
         app_users.splice(app_users.indexOf(socket.user), 1);
         console.log("these are the users after splice", app_users)
-        io.sockets.emit('all_users', app_users)
+        io.sockets.emit('all-users', app_users)
         socket.broadcast.emit('user-has-disconnected', socket.user.nickname)
         io.sockets.emit('number-connected', app_users.length)
     })

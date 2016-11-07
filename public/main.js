@@ -21,14 +21,20 @@ $(document).ready(function() {
   messagesWrap.hide();
   usersWrap.hide();
 
-  
   // variables that will be used to store user's information
-  var username = "";
-  var usersArray = [];
+  var state = {
+    
+  }
   var user = {};
   var typing;
   
-  ///// Functions that will be used to manipulate the DOM ////
+  /* TODO 
+  Meter user, typing, 
+  
+  */
+
+  
+  // Functions that will be used to manipulate the DOM 
   var addMessage = function(messageData) { // function to append the data/content of the message and username to the DOM
     messages.append('<b>' + messageData.username + '</b><div>' + messageData.message + '</div>');
   };
@@ -42,18 +48,6 @@ $(document).ready(function() {
     userConnected.fadeOut().html('')
   }
   
-  var userStatus = function(nickname){ //function to show a message when a user comes online
-    setTimeout(fadeout, 2000)
-    userConnected.html('<p>' + nickname + " " + "came online" + '</p>')
-    userConnected.show()
-  }
-  
-  var userStatusDisconnected = function(nickname){ //function to show a message when a user comes online
-    setTimeout(fadeout, 2000)
-    userConnected.html('<p>' + nickname + " " + "went offline" + '</p>')
-    userConnected.show()
-  }
-  
   var numberOfUsersConnected = function(number){
     usersConnectedDiv.html('<h3>' + number + " " + "users connected:" + "</h3>")
   }
@@ -61,7 +55,7 @@ $(document).ready(function() {
   var addToUserList = function (nickname) { // function to send details (id and nickname) to the server
     user.id = socket.io.engine.id
     user.nickname = nickname
-    socket.emit('app_user', user) // here is where we send the user details to the server
+    socket.emit('app-user', user) // here is where we send the user details to the server
   }
   
   var addUserList = function(users) {
@@ -78,64 +72,34 @@ $(document).ready(function() {
     })
   };
   
-  usernameForm.submit(function(event){
-    event.preventDefault();
-    nicknameWrap.hide();
-    messagesWrap.show();
-    username = usernameInput.val()
-    user['nickname'] = username
-    addToUserList(user.nickname)
-    usersWrap.show();
-    usersArray.push(user);
+  
+  // DOM Event Listners
+
+  //Event listener for Messages to All.
+  input.on('keydown', function(event) { // When user presses enter, event if is triggered
+    if (event.keyCode != 13) {
+      return;
+    }
+    var message = input.val();
+    var messageData = {message:message, username:user.nickname}; // Object to save the message and the username info
+    addMessage(messageData); // appends the messageData object
+    socket.emit('message', messageData); // emits messageData object to the server
+    input.val(''); 
   });
-  
-  function timeoutFunc (){
-    typing = false
-    socket.emit('typing', false)
-  }
-  
+    
+    //Event listener for Private Messages
   $('#privateMessageArea').on('keydown', 'input', function(event) { // When user presses enter, event if is triggered
     if (event.keyCode != 13) {
       return;
     }
     var privateDivId = $(this).parent('div').attr('id')
-    var privateMessageData  = privateMessageObject(privateDivId, $(this).val())
+    var privateMessageData  = {message: $(this).val(), username:user.nickname, id: user.id, id2: privateDivId}
     addPrivateMessageToDiv(privateMessageData)
     socket.emit('show-private-message', privateMessageData)
     $(this).val('');
   })
-  
-  input.keyup(function(){
-    typing = true
-    socket.emit('typing', user.nickname + ' ' + ' is typing...')
-    clearTimeout(timeout)
-    var timeout = setTimeout(timeoutFunc, 1000)
-  })
-  
-  usersWrap.on('click', "a", function(event){
-    event.preventDefault()
-    // aqui va el codigo para cuando alguien aplaste un nombre
-  })
-  
-  
-  ///// Event Listners that will communicate with the server //////
 
-  input.on('keydown', function(event) { // When user presses enter, event if is triggered
-    if (event.keyCode != 13) {
-      return;
-    }
-
-    var message = input.val();
-    var messageData = {message:message, username:username}; // Object to save the message and the username info
-    addMessage(messageData); // appends the messageData object
-    socket.emit('message', messageData); // emits messageData object to the server
-    input.val(''); 
-  });
-  
-  var privateMessageObject = function(divId, message2){
-    return {message: message2, username:username, id: user.id, id2: divId}
-  }
-  
+  // When a user starts typing. 
   socket.on('typing', function(data){
     if (data){
       typingMessage.html(data)
@@ -144,18 +108,56 @@ $(document).ready(function() {
       typingMessage.html('')
     }
   })
+    
+  // When user finished typing.
+  input.keyup(function(){
+    typing = true
+    socket.emit('typing', user.nickname + ' ' + ' is typing...')
+    clearTimeout(timeout)
+    var timeout = setTimeout(function(){
+      typing = false
+      socket.emit('typing', false)
+    }, 1000)
+  });
+
+// When a user clicks on a name
+  usersWrap.on('click', "a", function(event){
+    event.preventDefault()
+    // aqui va el codigo para cuando alguien aplaste un nombre
+    // este debe mostrar el div aplastado. y esconder los otros
+  })
   
-  socket.on('all_users', function (allUsers) {
-    usersArray = allUsers
-    addUserList(usersArray)
-    numberOfUsersConnected(usersArray.length)
+  // When a user enters their nickname
+    usernameForm.submit(function(event){
+    event.preventDefault();
+    nicknameWrap.hide();
+    messagesWrap.show();
+    user['nickname'] = usernameInput.val();
+    addToUserList(user.nickname)
+    usersWrap.show();
+  });
+  
+  
+  // Listerners for server events
+  
+  socket.on('all-users', function (allUsers) {
+    addUserList(allUsers)
+    numberOfUsersConnected(allUsers.length)
   })
   
   socket.on('message', addMessage); // adds message to the div every time the server send you a message
   
-  socket.on('user-has-connected', userStatus)
+  socket.on('user-has-connected', function(nickname){ //function to show a message when a user comes online
+    setTimeout(fadeout, 2000)
+    userConnected.html('<p>' + nickname + " " + "came online" + '</p>')
+    userConnected.show()
+  });
   
-  socket.on('user-has-disconnected', userStatusDisconnected )
+  socket.on('user-has-disconnected', function(nickname){ //function to show a message when a user comes online
+    setTimeout(fadeout, 2000)
+    userConnected.html('<p>' + nickname + " " + "went offline" + '</p>')
+    userConnected.show()
+  });
   
   socket.on('show-private-message', function(privateMessageData){
     var flip = privateMessageData.id;
