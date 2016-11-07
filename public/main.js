@@ -177,7 +177,6 @@ $(document).ready(function() {
   socket.on('show-private-message', function(privateMessageData){
     console.log('received')
     console.log(privateMessageData)
-  
     var flip = privateMessageData.id;
     privateMessageData.id = privateMessageData.id2;
     privateMessageData.id2 = flip
