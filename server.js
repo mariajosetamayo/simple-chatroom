@@ -27,8 +27,8 @@ io.on('connection', function (socket) {
     });
     
     socket.on('show-private-message', function(privateMessageData){
-        var privateUserId2 = privateMessageData.id2
-        socket.to(privateUserId2).emit('show-private-message', privateMessageData)
+        var privateUserId = privateMessageData.privateMessageDivId
+        socket.to(privateUserId).emit('show-private-message', privateMessageData)
     })
     
     socket.on('typing', function(data){
