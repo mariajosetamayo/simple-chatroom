@@ -37,13 +37,11 @@ $(document).ready(function() {
   */
 
   
-  // Functions that will be used to manipulate the DOM 
-  var addMessage = function(messageData) { // function to append the data/content of the message and username to the DOM
-    messages.append('<b>' + messageData.username + '</b><div>' + messageData.message + '</div>');
-  };
+ 
   
   var addPrivateMessageToDiv = function(privateMessageData) {
-    var div = $('#'+privateMessageData.privateMessageDivId)
+    var divID = privateMessageData.privateMessageDivId? privateMessageData.privateMessageDivId: 'all';
+    var div = $('#'+divID)
     div.append('<b>' + privateMessageData.username + '</b><div>' + privateMessageData.message + '</div>');
   }
   
@@ -52,7 +50,7 @@ $(document).ready(function() {
   }
   
   var numberOfUsersConnected = function(number){
-    usersConnectedDiv.html('<h3>' + number + " " + "users connected:" + "</h3>")
+    usersConnectedDiv.html('<h3>' + (number-2) + " " + "users connected:" + "</h3>")
   }
   
   var addToUserList = function (nickname) { // function to send details (id and nickname) to the server
@@ -80,18 +78,6 @@ $(document).ready(function() {
   
   
   // DOM Event Listners
-
-  //Event listener for Messages to All.
-  input.on('keydown', function(event) { // When user presses enter, event if is triggered
-    if (event.keyCode != 13) {
-      return;
-    }
-    var message = input.val();
-    var messageData = {message:message, username:state.user.nickname}; // Object to save the message and the username info
-    addMessage(messageData); // appends the messageData object
-    socket.emit('message', messageData); // emits messageData object to the server
-    input.val(''); 
-  });
     
     //Event listener for Private Messages
   privateMessagesArea.on('keydown', 'input', function(event) { // When user presses enter, event if is triggered
@@ -99,10 +85,17 @@ $(document).ready(function() {
       return;
     }
     var privateDivId = $(this).parent('div').attr('id')
-    console.log("this is the div id", privateDivId)
-    var privateMessageData  = {message: $(this).val(), username:state.user.nickname, userId: state.user.id, privateMessageDivId: privateDivId}
-    addPrivateMessageToDiv(privateMessageData)
-    socket.emit('show-private-message', privateMessageData)
+    if (privateDivId==='all'){
+      var message = input.val();
+      var messageData = {message:$(this).val(), username:state.user.nickname, privateMessageDivId: 'all'}; // Object to save the message and the username info
+      addPrivateMessageToDiv(messageData)
+      socket.emit('message', messageData); // emits messageData object to the server
+   
+    }else{
+      var messageData  = {message: $(this).val(), username:state.user.nickname, userId: state.user.id, privateMessageDivId: privateDivId}
+      addPrivateMessageToDiv(messageData)
+      socket.emit('show-private-message', messageData)
+    }
     $(this).val('');
   })
 
@@ -133,8 +126,7 @@ $(document).ready(function() {
     // aqui va el codigo para cuando alguien aplaste un nombre
     // este debe mostrar el div aplastado. y esconder los otros
     
-    
-    // Hide 
+
     var usernameClickedId = $(this).parent('li').attr('id').substring(3);
     console.log("id del elemento aplastado", usernameClickedId)
     
@@ -162,11 +154,17 @@ $(document).ready(function() {
   // Listerners for server events
   
   socket.on('all-users', function (allUsers) {
+    allUsers.push({nickname:"All", id:"all"})
     addUserList(allUsers)
     numberOfUsersConnected(allUsers.length)
   })
   
-  socket.on('message', addMessage); // adds message to the div every time the server send you a message
+  socket.on('message', function(privateMessageData){
+    addPrivateMessageToDiv(privateMessageData)
+    privateMessagesArea.children.hide()
+    privateMessagesArea.children().filter('#all').show()
+  }) 
+  // adds message to the div every time the server send you a message
   
   socket.on('user-has-connected', function(nickname){ //function to show a message when a user comes online
     setTimeout(fadeout, 2000)
@@ -181,11 +179,13 @@ $(document).ready(function() {
   });
   
   socket.on('show-private-message', function(privateMessageData){
-     
+    
     var flip = privateMessageData.userId;
     privateMessageData.userId = privateMessageData.privateMessageDivId;
     privateMessageData.privateMessageDivId = flip
+    
     addPrivateMessageToDiv(privateMessageData)
+    privateMessagesArea.children.hide()
     privateMessagesArea.children().filter('#'+privateMessageData.privateMessageDivId).show()
   }) 
 });
