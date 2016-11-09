@@ -23,7 +23,7 @@ $(document).ready(function() {
   // variables that will be used to store user's information
   var state = {
     user: {},
-    typing: false
+    typing: false,
   }
   
   /* 
@@ -63,16 +63,18 @@ $(document).ready(function() {
   
   var addUserList = function(users) {
     usersWrap.empty()
-    users.map(user =>  usersWrap.append('<li><a href="">' + ((user.nickname) ? user.nickname : user.id) + '</a></li>'))
+    users.map(user =>  usersWrap.append('<li id = '+ state.user.id+'><a href="">' + ((user.nickname) ? user.nickname : user.id) + '</a></li>'))
     
     privateMessagesArea.empty()
-    var otherUsers = users.filter(function(currentUser){ return state.user.id !== currentUser.id })
+    var otherUsers = users.filter(function(currentUser){ return state.user.id !== currentUser.id})
     otherUsers.map(function(user){
       var privateUserMessages = privateMessages.clone();
       privateUserMessages.find('h3').html('Private messages for: ' + ((user.nickname) ? user.nickname : user.id))
       privateUserMessages.attr("id", user.id);
       privateMessagesArea.append(privateUserMessages);
+      privateMessagesArea.children().hide()
     })
+   
   };
   
   
@@ -96,6 +98,7 @@ $(document).ready(function() {
       return;
     }
     var privateDivId = $(this).parent('div').attr('id')
+    console.log("this is the div id", privateDivId)
     var privateMessageData  = {message: $(this).val(), username:state.user.nickname, id: state.user.id, id2: privateDivId}
     addPrivateMessageToDiv(privateMessageData)
     socket.emit('show-private-message', privateMessageData)
@@ -128,6 +131,14 @@ $(document).ready(function() {
     event.preventDefault()
     // aqui va el codigo para cuando alguien aplaste un nombre
     // este debe mostrar el div aplastado. y esconder los otros
+    var usernameClickedId = $(this).parent('li').attr('id')
+    var idPrivateDiv = privateMessagesArea.children('div').attr('id')
+    console.log("this is the user clicked", usernameClickedId)
+    console.log("this is the div id", idPrivateDiv)
+    // displayAndHideDivs(idPrivateDiv)
+    // privateMessagesArea.children().find('idPrivateDiv').show();
+    // privateMessagesArea.children(idPrivateDiv).show()
+    privateMessagesArea.children().filter('#'+idPrivateDiv).show()
   })
   
   // When a user enters their nickname
@@ -163,9 +174,12 @@ $(document).ready(function() {
   });
   
   socket.on('show-private-message', function(privateMessageData){
+     
     var flip = privateMessageData.id;
+    console.log("this is the id of flip", flip)
     privateMessageData.id = privateMessageData.id2;
     privateMessageData.id2 = flip
     addPrivateMessageToDiv(privateMessageData)
+    privateMessagesArea.children().filter('#'+privateMessageData.id2).show()
   }) 
 });
